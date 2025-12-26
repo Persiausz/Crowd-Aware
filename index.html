@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crowd Monitor - คิวร้านอาหาร</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #2563eb;
+    --bg: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --radius: 20px;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Kanit', sans-serif;
+    background-color: var(--bg);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 8px;
+  }
+  
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .brand h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-main);
+  }
+
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--danger);
+    font-weight: 600;
+    background: #fef2f2;
+    padding: 4px 10px;
+    border-radius: 99px;
+    border: 1px solid #fee2e2;
+  }
+
+  .blink {
+    width: 8px;
+    height: 8px;
+    background-color: var(--danger);
+    border-radius: 50%;
+    animation: blinker 1.5s linear infinite;
+  }
+
+  @keyframes blinker {
+    50% { opacity: 0; }
+  }
+
+  /* Main Highlight Card */
+  .main-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-bottom: 30px;
+    transition: transform 0.2s;
+  }
+  
+  @media (min-width: 600px) {
+    .main-card { grid-template-columns: 1.2fr 1fr; }
+  }
+
+  .card-image {
+    position: relative;
+    height: 250px;
+    background: #e5e7eb;
+  }
+  
+  @media (min-width: 600px) {
+    .card-image { height: auto; }
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .status-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  /* สี Badge */
+  .status { color: var(--success); border: 2px solid var(--success); }
+  .status.mid { color: var(--warning); border: 2px solid var(--warning); }
+  .status.hot { color: var(--danger); border: 2px solid var(--danger); background: #fff5f5; }
+
+  .card-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .restaurant-name {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .restaurant-type {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .metric-box {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+  }
+
+  .count-number {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .count-label {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  .meta-info {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+  }
+
+  /* Grid for other restaurants */
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-main);
+    padding-left: 8px;
+  }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .small-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    opacity: 0.7; /* ทำให้ดูจางๆ เพราะยังไม่เปิด */
+    border: 1px solid #eee;
+  }
+
+  .small-card-img {
+    height: 100px;
+    background: #ddd;
+  }
+  
+  .small-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .small-card-content {
+    padding: 12px;
+  }
+
+  .small-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .coming-soon-badge {
+    display: inline-block;
+    font-size: 10px;
+    background: #f3f4f6;
+    color: var(--text-muted);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="brand">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>
+      <h1>CROWD MONITOR</h1>
+    </div>
+    <div class="live-indicator">
+      <div class="blink"></div> LIVE
+    </div>
+  </header>
+
+  <article class="main-card">
+    <div class="card-image">
+      <img src="./RestaurantA.png" alt="Restaurant A">
+      <div class="status-badge" id="status-badge">รอการเชื่อมต่อ...</div>
+    </div>
+    <div class="card-content">
+      <div>
+        <h2 class="restaurant-name">พริกขี้หนู Restaurant</h2>
+        <div class="restaurant-type">อาหารไทย · เปิดบริการ</div>
+      </div>
+      
+      <div class="metric-box">
+        <div class="count-number" id="people-count">0</div>
+        <div class="count-label">ลูกค้าในร้าน (คน)</div>
+      </div>
+
+      <div class="meta-info">
+        <div>Phase: <span id="phase">-</span></div>
+        <div>Time: <span id="last-ts">--:--</span></div>
+      </div>
+    </div>
+  </article>
+
+  <div class="section-title">สาขาที่กำลังจะเปิดให้บริการ</div>
+  <div class="grid-container">
+    
+    <div class="small-card">
+      <div class="small-card-img"><img src="./comingsoon.jpg" alt="B"></div>
+      <div class="small-card-content">
+        <h3 class="small-title">Restaurant B</h3>
+        <span class="coming-soon-badge">Coming Soon</span>
+      </div>
+    </div>
+
+    <div class="small-card">
+      <div class="small-card-img"><img src="./comingsoon.jpg" alt="C"></div>
+      <div class="small-card-content">
+        <h3 class="small-title">Restaurant C</h3>
+        <span class="coming-soon-badge">Coming Soon</span>
+      </div>
+    </div>
+
+    <div class="small-card">
+      <div class="small-card-img"><img src="./comingsoon.jpg" alt="D"></div>
+      <div class="small-card-content">
+        <h3 class="small-title">Restaurant D</h3>
+        <span class="coming-soon-badge">Coming Soon</span>
+      </div>
+    </div>
+
+    <div class="small-card">
+      <div class="small-card-img"><img src="./comingsoon.jpg" alt="E"></div>
+      <div class="small-card-content">
+        <h3 class="small-title">Restaurant E</h3>
+        <span class="coming-soon-badge">Coming Soon</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const WS_URL = "ws://localhost:8765";
+
+  // ฟังก์ชันเลือกสีและข้อความตามจำนวนคน
+  function statusFromCount(n) {
+    if (n <= 15) return {text: "ว่าง (Comfortable)", cls: "status-badge status"};
+    if (n <= 30) return {text: "ปานกลาง (Busy)", cls: "status-badge mid"};
+    return {text: "หนาแน่น (Crowded)", cls: "status-badge hot"};
+  }
+
+  const badge   = document.getElementById("status-badge");
+  const count   = document.getElementById("people-count");
+  const tsEl    = document.getElementById("last-ts");
+  const phaseEl = document.getElementById("phase");
+
+  let latestMsg = null;
+  const EMIT_MS = 500; // อัปเดตหน้าจอทุก 0.5 วิ (เพื่อความลื่นไหล)
+
+  function applyUpdate(msg){
+    const n = Number(msg.count ?? 0);
+    
+    // อัปเดตตัวเลข
+    count.textContent = n;
+    
+    // อัปเดตสถานะและสี
+    const st = statusFromCount(n);
+    badge.textContent = st.text;
+    badge.className   = st.cls;
+
+    // อัปเดตข้อมูล Meta (ป้องกัน error ถ้า element หาย แต่ตอนนี้ผมใส่ให้ครบแล้ว)
+    if(tsEl) tsEl.textContent = msg.ts ?? "--:--";
+    if(phaseEl) phaseEl.textContent = msg.phase ?? "—";
+  }
+
+  // Loop อัปเดต UI แยกจากการรับข้อมูล (Throttle)
+  setInterval(() => {
+    if (latestMsg) {
+      applyUpdate(latestMsg);
+      latestMsg = null;
+    }
+  }, EMIT_MS);
+
+  function connectWS() {
+    console.log("Connecting to WS...");
+    const ws = new WebSocket(WS_URL);
+    
+    ws.onopen = () => {
+        console.log("Connected");
+        badge.textContent = "เชื่อมต่อแล้ว";
+    };
+
+    ws.onmessage = (ev) => {
+      try { 
+        latestMsg = JSON.parse(ev.data); 
+      } catch(e) {
+        console.error("Parse error", e);
+      }
+    };
+    
+    ws.onclose = () => {
+        console.log("Disconnected. Reconnecting...");
+        badge.textContent = "ขาดการเชื่อมต่อ";
+        badge.className = "status-badge"; // สีเทาเดิม
+        setTimeout(connectWS, 2000);
+    };
+  }
+  
+  // เริ่มทำงาน
+  connectWS();
+</script>
+
+</body>
+</html>
